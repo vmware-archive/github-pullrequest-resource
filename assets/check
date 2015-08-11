@@ -18,7 +18,6 @@ cat > $payload <&0
 load_pubkey $payload
 
 uri=$(jq -r '.source.uri // ""' < $payload)
-paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
 ref=$(jq -r '.version.ref // ""' < $payload)
 
 destination=$TMPDIR/git-resource-repo-cache

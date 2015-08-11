@@ -1,13 +1,16 @@
-# Git Resource
+# Git Pull Requests Resource
 
-Tracks the commits in a [git](http://git-scm.com/) repository.
+Tracks the pull requests in a [git](http://git-scm.com/) repository and posts a status message on the pull requests with success/failure of a build.
 
 
 ## Source Configuration
 
 * `uri`: *Required.* The location of the repository.
 
-* `branch`: *Required.* The branch to track.
+* `access_token`: *Required.* Used for accessing a release in a private-repo 
+   during an `in` and pushing a release to a repo during an `out`.
+
+* `repo`: *Required.* The repository name that contains the releases.
 
 * `private_key`: *Optional.* Private key to use when pulling/pushing.
     Example:
@@ -20,12 +23,7 @@ Tracks the commits in a [git](http://git-scm.com/) repository.
       -----END RSA PRIVATE KEY-----
     ```
 
-* `paths`: *Optional.* If specified (as a list of glob patterns), only changes
-  to the specified files will yield new versions.
-
-* `ignore_paths`: *Optional.* The inverse of `paths`; changes to the specified
-  files are ignored.
-
+* `username`: *Required.* The GitHub username or organization name for the repository that the releases are in.
 
 ## Behavior
 
@@ -34,9 +32,6 @@ Tracks the commits in a [git](http://git-scm.com/) repository.
 The repository is cloned (or pulled if already present), and any commits
 made after the given version are returned. If no version is given, the ref
 for `HEAD` is returned.
-
-Any commits that contain the string `[ci skip]` will be ignored. This
-allows you to commit to your repository without triggering a new version.
 
 ### `in`: Clone the repository, at the given ref.
 
@@ -70,12 +65,6 @@ to the source.
 
 * `repository`: *Required.* The path of the repository to push to the source.
 
-* `rebase`: *Optional.* If pushing fails with non-fast-forward, continuously
-  attempt rebasing and pushing.
+* `state`: *Optional.* The state of the build status for the pullrequest. Default to `success`.
 
-* `tag`: *Optional* If this is set then HEAD will be tagged. The value should be
-  a path to a file containing the name of the tag.
-
-* `tag_prefix`: *Optional.* If specified, the tag read from the file will be
-prepended with this string. This is useful for adding `v` in front of
-version numbers.
+* `description`: *Optional.* The copy for the status message on the pull request.
