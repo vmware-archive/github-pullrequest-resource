@@ -1,0 +1,39 @@
+#!/bin/sh
+# vim: set ft=sh
+
+set -e
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+source $(dirname $0)/common.sh
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+payload=$TMPDIR/git-resource-request
+
+cat > $payload <&0
+
+load_pubkey $payload
+
+uri=$(jq -r '.source.uri // ""' < $payload)
+paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
+ref=$(jq -r '.version.ref // ""' < $payload)
+
+destination=$TMPDIR/git-resource-repo-cache
+
+rm -Rf $destination
+git clone $uri $destination
+cd $destination
+
+sed -i '/fetch/afetch = +refs/pull/*/head:refs/remotes/origin/pr/*' .git/config
+
+git fetch
+
+{
+  latest_ref=$(git branch -r | grep origin/pr/ | tr -d ' ' | sort -n -k3 -t/ | xargs -I ref git log -1 --format='%H' ref | tail -n 1)
+  if [ "$latest_ref" != "$ref" ]; then
+    echo $latest_ref
+  fi
+} | jq -R '.' | jq -s "map({ref: .})" >&3
